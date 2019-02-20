@@ -1,0 +1,282 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="pt-br" lang="pt-br">
+   <head>
+       <meta charset="utf-8"/>
+
+       <title>Facs</title>
+       <meta name="" content="  ">
+       <meta name="" content="">
+       <meta name="viewport" content="width=device-width, initial-scale=1">
+       <!-- CSS   -->
+       
+       <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+       <link href="assets/css/bootstrap-theme.min.css" rel="stylesheet">
+       
+              <!-- Javascript  -->
+        <!-- classes javascript aff  -->
+        
+               
+       <!-- API  affectiva versão 3.2 -->
+       <script src="https://download.affectiva.com/js/3.2/affdex.js"/>
+       
+           
+
+        <!-- bootstrap versão 3.7  -->
+       <script type="text/javascript" src="assets/js/bootstrap.js"></script>
+       
+       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+       <!--Topo -->
+      <div class="navbar navbar-inverse ">
+            <div class="container">
+              <a class="navbar-brand" href="#myPage">FACS</a>
+              <div class="text-right">
+                <img src="" class="img-rounded" style="margin-top: 5px; margin-bottom: 5px;">
+              </div>
+            </div>
+          </div>
+      </div>
+       <!--Fim do Topo -->
+   </head>
+
+  
+  <body >
+      <!--Imagem da Camera -->   
+   <div class="container">
+    <div class="row">
+      <div class="col-md-8">
+
+      
+       <div class="panel panel-primary" style="width:680px;height:550px;" >
+        <div class="panel-heading">Imagem </div>
+          <div class="panel-body" >
+              <div id="affdex_elements" style="width:680px;height:480px;"></div>
+          </div>
+        </div>
+      </div> 
+      <!--Fim da Imagem da Camera -->  
+
+      <!--Resultados-->  
+      <div class="col-md-4">
+        <div style="height:25em;">
+          <strong>RESULTADOS DE SEGUIMENTO EMOÇÃO</strong>
+          <div id="results" style="word-wrap:break-word;"></div>
+        </div>
+        <div>
+
+        <!--log-->  
+          <strong>DETECTOR LOG MSGS</strong>
+        </div>
+        <div id="logs"></div>
+      </div>
+      <!--Fim da row-->  
+    </div>
+    <!--Fim dos Resultados-->  
+
+     <!--Botões -->  
+    <div>
+      <button class="btn-primary" id="start" onclick="onStart()">Start</button>
+      <button class="btn-danger" id="stop" onclick="onStop()">Stop</button>
+      <button class="btn-warning" id="reset" onclick="onReset()">Reset</button>
+
+      <!--Fim Botões --> 
+
+       <!--ajuda API 
+        <!--
+      <h3>Affectiva JS SDK CameraDetector to track different emotions.</h3>
+      <p>
+        <strong>Instructions</strong>
+        </br>
+        Press the start button to start the detector.
+        <br/> When a face is detected, the probabilities of the different emotions are written to the DOM.
+        <br/> Press the stop button to end the detector.
+      </p>
+        -->
+        </br>
+    </div>
+  </div>
+
+
+</body>
+
+
+<script>
+
+// SDK Necessita de criar nós de vídeo e canvas no DOM para funcionar
+       // Aqui estamos adicionando esses nós uma div predefinida.
+      var divRoot = $("#affdex_elements")[0];
+      var width = 640;
+      var height = 480;
+      var faceMode = affdex.FaceDetectorMode.LARGE_FACES;
+     // var isRunningI = false;
+      // Construir um CameraDetector e especificar a largura da imagem / altura e modo de detector de rosto.
+      var detector = new affdex.CameraDetector(divRoot, width, height, faceMode);
+
+      // Habilita a detecção de todas as Expressões, Emoções e classificadores Emojis.
+      detector.detectAllEmotions();
+      detector.detectAllExpressions();
+      detector.detectAllEmojis();
+      detector.detectAllAppearance();
+
+      // Adicionar uma chamada de retorno para notificar quando o detector é inicializado e pronto para execução.
+      detector.addEventListener("onInitializeSuccess", function() {
+        log('#logs', "The detector reports initialized");
+        // Exibir canvas em vez de feed de vídeo porque queremos desenhar os pontos de recurso nele
+        $("#face_video_canvas").css("display", "block");
+        $("#face_video").css("display", "none");
+      });
+
+      function log(node_name, msg) {
+        $(node_name).append("<span>" + msg + "</span><br />")
+      }
+
+      // função é executada quando o botão Iniciar é pressionado.
+      function onStart() {
+        if (detector && !detector.isRunning) {
+          $("#logs").html("");
+          detector.start();
+        }
+        log('#logs', "Clicked the start button");
+      }
+
+      // função é executada quando o botão Parar é pressionado.
+      function onStop() {
+        log('#logs', "Clicked the stop button");
+        window.location.reload();
+
+        if (detector && detector.isRunning && isRunningI) {
+          detector.removeEventListener();
+
+          detector.stop();
+        }
+      };
+
+      // função é executada quando o botão Reset é pressionado.
+      function onReset() {
+        log('#logs', "Clicked the reset button");
+        if (detector && detector.isRunning) {
+          detector.reset();
+
+          $('#results').html("");
+        }
+      };
+
+      // Adicionar uma chamada de retorno para notificar quando o acesso à câmera é permitido
+      detector.addEventListener("onWebcamConnectSuccess", function() {
+        log('#logs', "Webcam access allowed");
+      });
+
+      // Adicionar um retorno de chamada para notificar quando o acesso à câmera é negado
+      detector.addEventListener("onWebcamConnectFailure", function() {
+        log('#logs', "webcam denied");
+        console.log("Webcam access denied");
+      });
+
+      // Adicionar uma chamada de retorno para notificar quando o detector é parado
+      detector.addEventListener("onStopSuccess", function() {
+        log('#logs', "The detector reports stopped");
+        $("#results").html("");
+      });
+
+      // Adicionar uma chamada de retorno para receber os resultados do processamento de uma imagem.
+       // O objeto rostos contém a lista das faces detectadas numa imagem.
+       // Faces objeto contém probabilidades para todas as diferentes expressões, emoções e métricas de aparência
+
+      detector.addEventListener("onImageResultsSuccess", function(faces, image, timestamp) {
+       
+       $('#results').html("");
+
+      
+
+
+        //tempo
+     
+     // setInterval("alert(‘Viva!’)", 5000);
+
+        var tempo = (Number(timestamp.toFixed(2))); 
+        //alert ('Tempo'+ tempo); 
+
+        log('#results', "Timestamp: " + timestamp.toFixed(2));
+        //log('#results', "Number of faces found: " + faces.length);
+        if (faces.length > 0) {
+          //log('#results', "Appearance: " + JSON.stringify(faces[0].appearance));
+          
+        //1- joy - alegria
+        var alegria = (Number(faces[0].emotions.joy.toFixed(0)));
+        //2- sadness - tristeza
+        var tristeza = (Number(faces[0].emotions.sadness.toFixed(0)));
+        //3- disgust - desgosto
+        var desgosto = (Number(faces[0].emotions.disgust.toFixed(0)));
+        //4- contempt - desprezo
+        var desprezo = (Number(faces[0].emotions.contempt.toFixed(0)));
+        //5- anger - Raiva
+        var raiva = (Number(faces[0].emotions.anger.toFixed(0)));
+        //6- fear - Medo
+        var medo = (Number(faces[0].emotions.fear.toFixed(0)));
+         //7- surprise - Surpresa
+        var surpresa = (Number(faces[0].emotions.surprise.toFixed(0)));
+        //8- valence - valência
+        var valencia = (Number(faces[0].emotions.valence.toFixed(0)));
+         //9- engagement - engajamento
+        var engajamento = (Number(faces[0].emotions.engagement.toFixed(0)));
+
+        var URL = "cadastro.php";
+        var dados = {alegria, tristeza, desgosto, desprezo, raiva, medo, surpresa, valencia, engajamento, tempo};
+
+       
+
+        $.post(URL, 
+          dados,         
+          function(response,status) {
+           //alert("Dados: " + response + "\nStatus: " + status);
+          } );
+
+
+
+        //alert ('Tristeza'+ tristeza);
+
+          log('#results', "Emotions: " + JSON.stringify(faces[0].emotions, function(key, val) {
+            return val.toFixed ? Number(val.toFixed(0)) : val;
+          }));
+
+
+
+
+         // $.post("cadastro.php", {
+          //    nome : 'results'
+           //    }, function(msg){
+          // $("#resultado").html(msg);
+          //    })
+         // log('#results', "Expressions: " + JSON.stringify(faces[0].expressions, function(key, val) {
+         //   return val.toFixed ? Number(val.toFixed(0)) : val;
+          //}));
+          log('#results', "Emoji: " + faces[0].emojis.dominantEmoji);
+          drawFeaturePoints(image, faces[0].featurePoints);
+        }
+
+      
+
+      });
+
+
+
+
+      // Desenha os pontos de recurso faciais detectados na imagem
+      function drawFeaturePoints(img, featurePoints) {
+        var contxt = $('#face_video_canvas')[0].getContext('2d');
+
+        var hRatio = contxt.canvas.width / img.width;
+        var vRatio = contxt.canvas.height / img.height;
+        var ratio = Math.min(hRatio, vRatio);
+
+        contxt.strokeStyle = "#FFFFFF";
+        for (var id in featurePoints) {
+          contxt.beginPath();
+          contxt.arc(featurePoints[id].x,
+            featurePoints[id].y, 2, 0, 2 * Math.PI);
+          contxt.stroke();
+
+        }
+      }
+  </script>
+
+</html>
